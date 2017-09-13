@@ -1,13 +1,13 @@
 import axios from 'axios'
-export function login (form) {
+export function login (param) {
   const url = '/api/login'
   return axios({
     method: 'POST',
     url: url,
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/json'
     },
-    data: form
+    data: param
   }).then((res) => {
     return Promise.resolve(res.data)
   })

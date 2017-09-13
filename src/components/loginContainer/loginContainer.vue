@@ -25,6 +25,10 @@
         </div>
       </div>
     </div>
+    <md-snackbar :md-position="'bottom right'" ref="snackbar" :md-duration="3000">
+      <span>{{snackbarMessage}}</span>
+      <md-button class="md-accent" md-theme="light-blue" @click="$refs.snackbar.close()">我知道了</md-button>
+    </md-snackbar>
   </div>
 </template>
 
@@ -37,7 +41,8 @@
         account: '',
         password: '',
         checked: false,
-        bgImg: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505204495929&di=989e72a2e4a9abac1eab743cf623fd0a&imgtype=0&src=http%3A%2F%2Fwww.bhmpics.com%2Fwallpapers%2Flake_near_mountain-1920x1080.jpg'
+        bgImg: 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505204495929&di=989e72a2e4a9abac1eab743cf623fd0a&imgtype=0&src=http%3A%2F%2Fwww.bhmpics.com%2Fwallpapers%2Flake_near_mountain-1920x1080.jpg',
+        snackbarMessage: ''
       }
     },
     methods: {
@@ -45,11 +50,29 @@
         if (this.account === '' || this.password === '') {
           console.log('请输入完整的数据')
         }
-        let form = new FormData()
-        form.append('account', this.account)
-        form.append('password', this.password)
-        form.append('rememberMe', this.checked)
-        login(form)
+        login({
+          account: this.account.trim(),
+          password: this.password.trim(),
+          ifChecked: this.checked
+        }).then((res) => {
+          let data = JSON.parse(res)
+          console.log(data)
+          if (data.code !== 0) {
+            if (data.message) {
+              this.openSnackbar(data.message)
+            } else {
+              this.openSnackbar('notMessage')
+            }
+            return
+          }
+          window.location.href = window.location.origin + data.redirectUrl
+        })
+      },
+      openSnackbar (message) {
+        if (message) {
+          this.snackbarMessage = message
+        }
+        this.$refs.snackbar.open()
       }
     },
     watch: {
@@ -59,6 +82,10 @@
     },
     created () {
       this.checked = getStore('login', 'remember_me_checked', false)
+      if (window.userInfo) {
+        this.account = window.userInfo.account
+        this.password = window.userInfo.password
+      }
     }
   }
 </script>
